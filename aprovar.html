@@ -52,6 +52,7 @@
 <main>
   <h1>Aprovar posts do <span>TikTok</span></h1>
   <p class="sub">Revise cada vídeo antes de ele ser publicado na sua conta. Nada é publicado sem a sua aprovação.</p>
+  <p><a id="conectar" class="sub" href="#" hidden>🔗 Conectar ou trocar a conta do TikTok</a></p>
   <div id="conteudo"><p class="sub">Carregando…</p></div>
 </main>
 
@@ -88,6 +89,7 @@
       <div class="botoes">
         <button type="button" class="principal agendar">Aprovar para o próximo horário</button>
         <button type="button" class="secundario agora">Publicar agora</button>
+        <button type="button" class="secundario rascunho">Mandar para rascunho</button>
       </div>
       <div class="resultado"></div>
     </div>
@@ -213,10 +215,27 @@ function cartao(item, criador) {
       atualizar();
     }
   }
+  // Upload to TikTok: vai para os rascunhos do app (sem legenda, que o TikTok não aceita nesse modo)
+  $(".rascunho").addEventListener("click", async () => {
+    const resultado = $(".resultado");
+    resultado.className = "resultado"; resultado.textContent = "Enviando para os rascunhos…";
+    try {
+      const res = await fetch(`${API}/api/rascunho`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId: item.itemId }) });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.erro ?? res.status);
+      resultado.className = "resultado ok";
+      resultado.textContent = "✔ Enviado! Abra as notificações do app do TikTok para editar e publicar.";
+    } catch (e) { resultado.className = "resultado erro"; resultado.textContent = `Não deu certo: ${e.message}`; }
+  });
   $(".agendar").addEventListener("click", () => enviar(false));
   $(".agora").addEventListener("click", () => enviar(true));
   return el;
 }
+
+// Login Kit: o endereço de autorização vem do painel (a chave do app fica no computador)
+fetch(`${API}/api/login-url`).then((r) => r.json()).then(({ url }) => {
+  const a = document.getElementById("conectar"); a.href = url; a.hidden = false;
+}).catch(() => {});
 
 fetch(`${API}/api/estado`)
   .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.erro); return j; })

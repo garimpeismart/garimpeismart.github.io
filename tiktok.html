@@ -33,6 +33,16 @@
     campo.hidden = document.getElementById("copiar").hidden = true;
   } else {
     campo.value = location.href;
+    // Se o painel do garimpei estiver rodando neste computador, conclui o login sozinho
+    fetch("http://127.0.0.1:47800/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ endereco: location.href }) })
+      .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.erro); return j; })
+      .then(({ conta }) => {
+        document.getElementById("titulo").textContent = "✔ Conta do TikTok conectada";
+        document.getElementById("texto").innerHTML = "";
+        document.getElementById("texto").append("Conta conectada ao garimpei. ", Object.assign(document.createElement("a"), { href: "aprovar.html", textContent: "Voltar para a aprovação dos posts" }));
+        campo.hidden = document.getElementById("copiar").hidden = true;
+      })
+      .catch(() => {});
   }
   document.getElementById("copiar").addEventListener("click", async () => {
     campo.select();
