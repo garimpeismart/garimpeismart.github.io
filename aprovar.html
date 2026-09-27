@@ -91,6 +91,7 @@
         <button type="button" class="principal agendar">Aprovar para o próximo horário</button>
         <button type="button" class="secundario agora">Publicar agora</button>
         <button type="button" class="secundario rascunho">Mandar para rascunho</button>
+        <button type="button" class="secundario ja">Já publiquei</button>
       </div>
       <div class="resultado"></div>
     </div>
@@ -227,6 +228,13 @@ function cartao(item, criador) {
       resultado.className = "resultado ok";
       resultado.textContent = "✔ Enviado! Abra as notificações do app do TikTok para editar e publicar.";
     } catch (e) { resultado.className = "resultado erro"; resultado.textContent = `Não deu certo: ${e.message}`; }
+  });
+  // Publicado por fora (pelo app): só tira da lista
+  $(".ja").addEventListener("click", async () => {
+    if (!confirm("Tirar este produto da lista? Use só se ele já foi publicado no TikTok.")) return;
+    const res = await fetch(`${API}/api/ja-publicado`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId: item.itemId }) });
+    if (res.ok) el.remove();
+    else { $(".resultado").className = "resultado erro"; $(".resultado").textContent = "Não deu certo, tente de novo."; }
   });
   $(".agendar").addEventListener("click", () => enviar(false));
   $(".agora").addEventListener("click", () => enviar(true));
