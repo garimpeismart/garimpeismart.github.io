@@ -136,7 +136,12 @@ function cartao(item, criador) {
   const $ = (s) => el.querySelector(s);
   $(".nome").textContent = `${item.nome} · ${brl(item.preco)}`;
   const video = $("video");
-  video.src = item.video; video.poster = item.imagem;
+  video.poster = item.imagem;
+  // Prévia com o vídeo editado (o que vai ser publicado), que fica no computador; se falhar, mostra o original
+  fetch(`${API}/api/video/${item.itemId}`)
+    .then((r) => (r.ok ? r.blob() : Promise.reject()))
+    .then((b) => (video.src = URL.createObjectURL(b)))
+    .catch(() => (video.src = item.video));
   const legenda = $(".legenda");
   legenda.value = item.legenda;
   const contar = () => ($(".contador").textContent = `${legenda.value.length} / 2200`);
